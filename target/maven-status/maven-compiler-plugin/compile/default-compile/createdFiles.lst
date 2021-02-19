@@ -1,0 +1,4 @@
+org/wso2/carbon/hash/provider/pbkdf2/internal/PBKDF2HashServiceComponent.class
+org/wso2/carbon/hash/provider/pbkdf2/constant/Constants.class
+org/wso2/carbon/hash/provider/pbkdf2/PBKDF2HashProvider.class
+org/wso2/carbon/hash/provider/pbkdf2/ErrorMessage.class
