@@ -22,6 +22,7 @@ package org.wso2.carbon.hash.provider.pbkdf2;
  * The class which includes all the Error message and codes regarding PBKDF2 hashing.
  */
 public enum ErrorMessage {
+
     // Client Errors.
     ERROR_CODE_EMPTY_VALUE("70001", "Empty value", "Value cannot be empty"),
 

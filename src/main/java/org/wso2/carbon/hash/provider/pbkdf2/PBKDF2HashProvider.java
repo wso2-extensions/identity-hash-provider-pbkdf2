@@ -163,5 +163,4 @@ public class PBKDF2HashProvider implements HashProvider {
         byte[] name = Base64.getEncoder().encode(salt.getBytes());
         return (Base64.getDecoder().decode(new String(name).getBytes(StandardCharsets.UTF_8)));
     }
-
 }

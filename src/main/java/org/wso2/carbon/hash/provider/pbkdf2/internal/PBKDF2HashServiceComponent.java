@@ -56,5 +56,4 @@ public class PBKDF2HashServiceComponent {
             log.debug("PBKDF2 bundle is deactivated ");
         }
     }
-
 }

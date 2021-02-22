@@ -23,10 +23,6 @@ package org.wso2.carbon.hash.provider.pbkdf2.constant;
  */
 public class Constants {
 
-    private Constants(){
-
-    }
-
     public static final String IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX = "UTA-";
 
     public static final String PSEUDO_RANDOM_FUNCTION_KEY = "PRF";
@@ -36,5 +32,9 @@ public class Constants {
     public static final String DERIVED_KEY_LENGTH_KEY = "dkLength";
     public static final int DEFAULT_ITERATION_COUNT = 10000;
     public static final int DEFAULT_DERIVED_KEY_LENGTH = 256;
+
+    private Constants() {
+
+    }
 
 }
