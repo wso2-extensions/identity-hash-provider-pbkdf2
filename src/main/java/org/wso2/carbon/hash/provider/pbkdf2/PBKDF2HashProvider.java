@@ -61,6 +61,43 @@ public class PBKDF2HashProvider implements HashProvider {
     }
 
     /**
+     * Calculate hash value according to the given parameters.
+     *
+     * @param value                Value to be hashed.
+     * @param salt                 The salt.
+     * @param iterationCount       Number of iterations to be used by the PRF.
+     * @param dkLength             The output length of the hash function.
+     * @param pseudoRandomFunction PRF function which needs to be used for PBKDF2 hashing.
+     * @return The resulting hash value of the value.
+     * @throws HashProviderException If an error occurred while calculating the hash.
+     */
+    private byte[] pbkdf2HashCalculation(String value, String salt, int iterationCount, int dkLength,
+                                         String pseudoRandomFunction)
+            throws HashProviderException {
+
+        try {
+            validateSalt(salt);
+            PBEKeySpec spec = new PBEKeySpec(value.toCharArray(), base64ToByteArray(salt), iterationCount, dkLength);
+            SecretKeyFactory skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
+            return skf.generateSecret(spec).getEncoded();
+        } catch (NoSuchAlgorithmException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
+            }
+            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
+                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
+                            ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode());
+        } catch (InvalidKeySpecException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(), e);
+            }
+            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(),
+                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
+                            ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getCode());
+        }
+    }
+
+    /**
      * This method is responsible fpr validating the value to be hashed.
      *
      * @param value The value which needs to be hashed.
@@ -71,6 +108,22 @@ public class PBKDF2HashProvider implements HashProvider {
         if (StringUtils.isBlank(value)) {
             throw new HashProviderClientException(
                     ErrorMessage.ERROR_CODE_EMPTY_VALUE.getDescription(),
+                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
+                            ErrorMessage.ERROR_CODE_EMPTY_VALUE.getCode());
+        }
+    }
+
+    /**
+     * This method is responsible for validating the salt.
+     *
+     * @param salt The salt which needs to be validated.
+     * @throws HashProviderClientException If the salt value is blank.
+     */
+    private void validateSalt(String salt) throws HashProviderClientException {
+
+        if (StringUtils.isBlank(salt)) {
+            throw new HashProviderClientException(
+                    ErrorMessage.ERROR_CODE_SALT_EMPTY_EXCEPTION.getDescription(),
                     Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
                             ErrorMessage.ERROR_CODE_EMPTY_VALUE.getCode());
         }
@@ -116,56 +169,6 @@ public class PBKDF2HashProvider implements HashProvider {
             return Constants.DEFAULT_PBKDF2_PRF;
         }
         return (String) metaProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
-    }
-
-    /**
-     * Calculate hash value according to the given parameters.
-     *
-     * @param value                Value to be hashed.
-     * @param salt                 The salt.
-     * @param iterationCount       Number of iterations to be used by the PRF.
-     * @param dkLength             The output length of the hash function.
-     * @param pseudoRandomFunction PRF function which needs to be used for PBKDF2 hashing.
-     * @return The resulting hash value of the value.
-     * @throws HashProviderException If an error occurred while calculating the hash.
-     */
-    private byte[] pbkdf2HashCalculation(String value, String salt, int iterationCount, int dkLength,
-                                         String pseudoRandomFunction)
-            throws HashProviderException {
-
-        try {
-            PBEKeySpec spec = new PBEKeySpec(value.toCharArray(), base64ToByteArray(salt), iterationCount, dkLength);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
-            return skf.generateSecret(spec).getEncoded();
-        } catch (NoSuchAlgorithmException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
-            }
-            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
-                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
-                            ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode());
-        } catch (InvalidKeySpecException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(), e);
-            }
-            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(),
-                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
-                            ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getCode());
-        } catch (NullPointerException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(ErrorMessage.ERROR_CODE_NULL_POINT_EXCEPTION.getDescription(), e);
-            }
-            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NULL_POINT_EXCEPTION.getDescription(),
-                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
-                            ErrorMessage.ERROR_CODE_NULL_POINT_EXCEPTION.getCode());
-        } catch (IllegalArgumentException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(ErrorMessage.ERROR_CODE_ILLEGAL_ARGUEMENT_EXCEPTION.getDescription(), e);
-            }
-            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
-                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
-                            ErrorMessage.ERROR_CODE_ILLEGAL_ARGUEMENT_EXCEPTION.getCode());
-        }
     }
 
     /**

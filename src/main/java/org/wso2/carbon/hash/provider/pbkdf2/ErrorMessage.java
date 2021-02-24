@@ -31,10 +31,7 @@ public enum ErrorMessage {
             "PRF was not detected in Secret Key Factory"),
     ERROR_CODE_INVALID_KEY_SPEC("60502", "PBEKeySpec was invalid",
             "This is the exception for invalid key specifications"),
-    ERROR_CODE_NULL_POINT_EXCEPTION("60503", "Null point exception at salt",
-            "Salt value must not be null"),
-    ERROR_CODE_ILLEGAL_ARGUEMENT_EXCEPTION("60504", "Illegal arguement of salt",
-            "Salt parameter mus not be empty.");
+    ERROR_CODE_SALT_EMPTY_EXCEPTION("60503", "Invalid salt", "Salt is blank");
 
     private final String code;
     private final String message;
