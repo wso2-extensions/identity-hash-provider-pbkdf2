@@ -19,17 +19,22 @@
 package org.wso2.carbon.hash.provider.pbkdf2;
 
 /**
- * The class which includes all the Error message and codes regarding PBKDF2 hashing.
+ * The ENUM includes all the error messages of hashing.
  */
 public enum ErrorMessage {
 
     // Client Errors.
-    ERROR_CODE_EMPTY_VALUE("70001", "Empty value", "Value cannot be empty"),
+    ERROR_CODE_EMPTY_VALUE("60001", "Empty value", "Value cannot be empty"),
 
     // Server Errors.
-    ERROR_CODE_NO_SUCH_ALGORITHM("70501", "No Algorithm Pseudo Random Function detected in PBKDF2",
-            "PRF was not detected in Secret Key Factory."),
-    ERROR_CODE_INVALID_KEY_SPEC("70502", "PBEKeySpec was invalid", "");
+    ERROR_CODE_NO_SUCH_ALGORITHM("60501", "Pseudo Random Function was not detected",
+            "PRF was not detected in Secret Key Factory"),
+    ERROR_CODE_INVALID_KEY_SPEC("60502", "PBEKeySpec was invalid",
+            "This is the exception for invalid key specifications"),
+    ERROR_CODE_NULL_POINT_EXCEPTION("60503", "Null point exception at salt",
+            "Salt value must not be null"),
+    ERROR_CODE_ILLEGAL_ARGUEMENT_EXCEPTION("60504", "Illegal arguement of salt",
+            "Salt parameter mus not be empty.");
 
     private final String code;
     private final String message;
@@ -43,7 +48,7 @@ public enum ErrorMessage {
     }
 
     /**
-     * Get the error code with the scenario.
+     * Get the error code.
      *
      * @return Error code without the scenario prefix.
      */
@@ -63,7 +68,7 @@ public enum ErrorMessage {
     }
 
     /**
-     * Get error scenario message description.
+     * Get error scenario description.
      *
      * @return Error scenario description.
      */

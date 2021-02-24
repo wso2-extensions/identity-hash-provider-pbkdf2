@@ -23,7 +23,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.hash.provider.pbkdf2.constant.Constants;
 
+import org.wso2.carbon.user.core.exceptions.HashProviderClientException;
 import org.wso2.carbon.user.core.exceptions.HashProviderException;
+import org.wso2.carbon.user.core.exceptions.HashProviderServerException;
 import org.wso2.carbon.user.core.hash.HashProvider;
 
 import java.nio.charset.StandardCharsets;
@@ -35,7 +37,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 /**
- * This class contains the implementation for the PBKDF2 hashing algorithm.
+ * This class contains the implementation of PBKDF2 hashing algorithm.
  */
 public class PBKDF2HashProvider implements HashProvider {
 
@@ -46,9 +48,9 @@ public class PBKDF2HashProvider implements HashProvider {
             throws HashProviderException {
 
         validateEmptyValue(value);
-        int iterationCount = getCount(metaProperties);
-        int dkLen = getDerivedKeyLength(metaProperties);
-        String pseudoRandomFunction = getPseudoRandomFunction(metaProperties);
+        int iterationCount = resolveIterationCount(metaProperties);
+        int dkLen = resolveDerivedKeyLength(metaProperties);
+        String pseudoRandomFunction = resolvePseudoRandomFunction(metaProperties);
         return pbkdf2HashCalculation(value, salt, iterationCount, dkLen, pseudoRandomFunction);
     }
 
@@ -59,15 +61,15 @@ public class PBKDF2HashProvider implements HashProvider {
     }
 
     /**
-     * This method is responsible for validating the value.
+     * This method is responsible fpr validating the value to be hashed.
      *
      * @param value The value which needs to be hashed.
-     * @throws HashProviderException The custom exception which is thrown at validating the value.
+     * @throws HashProviderClientException If the hash value is not provided.
      */
-    private void validateEmptyValue(String value) throws HashProviderException {
+    private void validateEmptyValue(String value) throws HashProviderClientException {
 
         if (StringUtils.isBlank(value)) {
-            throw new HashProviderException(
+            throw new HashProviderClientException(
                     ErrorMessage.ERROR_CODE_EMPTY_VALUE.getDescription(),
                     Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
                             ErrorMessage.ERROR_CODE_EMPTY_VALUE.getCode());
@@ -75,88 +77,102 @@ public class PBKDF2HashProvider implements HashProvider {
     }
 
     /**
-     * This method is responsible for validating and getting iteration count from the metaProperties.
+     * Resolve the iteration count according to the given meta properties.
      *
-     * @param metaProperties The Map which has the properties which needs for PBKDF2 hashing algorithm.
-     * @return the iteration count which needs to be get.
+     * @param metaProperties The properties map.
+     * @return The iteration count.
      */
-    private int getCount(Map<String, Object> metaProperties) {
+    private int resolveIterationCount(Map<String, Object> metaProperties) {
 
-        if (metaProperties.get(Constants.ITERATION_COUNT_KEY) == null) {
+        if (metaProperties.get(Constants.ITERATION_COUNT_PROPERTY) == null) {
             return Constants.DEFAULT_ITERATION_COUNT;
         }
-        return (int) metaProperties.get(Constants.ITERATION_COUNT_KEY);
+        return (int) metaProperties.get(Constants.ITERATION_COUNT_PROPERTY);
     }
 
     /**
-     * This method is responsible for validating and getting derived key length from the metaProperties.
+     * Resolve derived key length from the metaProperties.
      *
-     * @param metaProperties The Map which has the properties which needs for PBKDF2 hashing algorithm.
-     * @return the derived key length which needs to be get.
+     * @param metaProperties The properties map.
+     * @return The derived key length.
      */
-    private int getDerivedKeyLength(Map<String, Object> metaProperties) {
+    private int resolveDerivedKeyLength(Map<String, Object> metaProperties) {
 
-        if (metaProperties.get(Constants.DERIVED_KEY_LENGTH_KEY) == null) {
+        if (metaProperties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY) == null) {
             return Constants.DEFAULT_DERIVED_KEY_LENGTH;
         }
-        return (int) metaProperties.get(Constants.DERIVED_KEY_LENGTH_KEY);
+        return (int) metaProperties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY);
     }
 
     /**
-     * This method is responsible for validating and getting Pseudo Random Function from the metaProperties.
+     * Resolve pseudo random function from the metaProperties.
      *
-     * @param metaProperties The Map which has the properties which needs for PBKDF2 hashing algorithm.
-     * @return the pseudo random function which needs to be get.
+     * @param metaProperties The properties map.
+     * @return The pseudo random function.
      */
-    private String getPseudoRandomFunction(Map<String, Object> metaProperties) {
+    private String resolvePseudoRandomFunction(Map<String, Object> metaProperties) {
 
-        if (metaProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_KEY) == null) {
+        if (metaProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY) == null) {
             return Constants.DEFAULT_PBKDF2_PRF;
         }
-        return (String) metaProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_KEY);
+        return (String) metaProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
     }
 
     /**
-     * This method is responsible for the implementation of PBKDF2 hashing algorithm.
+     * Calculate hash value according to the given parameters.
      *
-     * @param value                The value (eg:- Password, token) which needs to be hashed.
-     * @param salt                 The salt value for each respective values.
-     * @param iterationCount       Iteration count denotes how iteratively the value needs to be hashed inside PRF.
-     * @param dkLen                The output length of the hash function.
-     * @param pseudoRandomFunction the PRF which needs to be used in PBKDF2 hashing.
+     * @param value                Value to be hashed.
+     * @param salt                 The salt.
+     * @param iterationCount       Number of iterations to be used by the PRF.
+     * @param dkLength             The output length of the hash function.
+     * @param pseudoRandomFunction PRF function which needs to be used for PBKDF2 hashing.
      * @return The resulting hash value of the value.
-     * @throws HashProviderException This exception includes the exceptional handling for pbkdf2 hashing.
+     * @throws HashProviderException If an error occurred while calculating the hash.
      */
-    private byte[] pbkdf2HashCalculation(String value, String salt, int iterationCount, int dkLen,
+    private byte[] pbkdf2HashCalculation(String value, String salt, int iterationCount, int dkLength,
                                          String pseudoRandomFunction)
             throws HashProviderException {
 
         try {
-            PBEKeySpec spec = new PBEKeySpec(value.toCharArray(), base64ToByteArray(salt), iterationCount, dkLen);
+            PBEKeySpec spec = new PBEKeySpec(value.toCharArray(), base64ToByteArray(salt), iterationCount, dkLength);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
             return skf.generateSecret(spec).getEncoded();
         } catch (NoSuchAlgorithmException e) {
             if (log.isDebugEnabled()) {
                 log.debug(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
             }
-            throw new HashProviderException(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
+            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
                     Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
                             ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode());
         } catch (InvalidKeySpecException e) {
             if (log.isDebugEnabled()) {
                 log.debug(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(), e);
             }
-            throw new HashProviderException(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(),
+            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(),
                     Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
                             ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getCode());
+        } catch (NullPointerException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(ErrorMessage.ERROR_CODE_NULL_POINT_EXCEPTION.getDescription(), e);
+            }
+            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NULL_POINT_EXCEPTION.getDescription(),
+                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
+                            ErrorMessage.ERROR_CODE_NULL_POINT_EXCEPTION.getCode());
+        } catch (IllegalArgumentException e) {
+            if (log.isDebugEnabled()) {
+                log.debug(ErrorMessage.ERROR_CODE_ILLEGAL_ARGUEMENT_EXCEPTION.getDescription(), e);
+            }
+            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
+                    Constants.IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX +
+                            ErrorMessage.ERROR_CODE_ILLEGAL_ARGUEMENT_EXCEPTION.getCode());
         }
     }
 
     /**
-     * this method is responsible for converting the base64 string value value of salt to byte array.
+     * This method is responsible for converting the base64 string value value of salt to byte array.
      *
-     * @param salt The salt value which needs to be converted into byte array.
-     * @return The converted byte array from base64 Salt value.
+     * @param salt The salt.
+     * @return The converted byte array from base64 salt value.
      */
     private byte[] base64ToByteArray(String salt) {
 
