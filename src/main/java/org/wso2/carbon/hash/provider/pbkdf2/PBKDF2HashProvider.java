@@ -43,21 +43,50 @@ public class PBKDF2HashProvider implements HashProvider {
 
     private static final Log log = LogFactory.getLog(PBKDF2HashProvider.class);
 
+    private String pseudoRandomFunction;
+    private int dkLength;
+    private int iterationCount;
+
+    @Override
+    public void init() {
+
+        pseudoRandomFunction = Constants.DEFAULT_PBKDF2_PRF;
+        dkLength = Constants.DEFAULT_DERIVED_KEY_LENGTH;
+        iterationCount = Constants.DEFAULT_ITERATION_COUNT;
+    }
+
+    @Override
+    public void init(Map<String, Object> initProperties) {
+
+        iterationCount = resolveIterationCount(initProperties);
+        dkLength = resolveDerivedKeyLength(initProperties);
+        pseudoRandomFunction = resolvePseudoRandomFunction(initProperties);
+    }
+
+    @Override
+    public byte[] getHash(String value, String salt) throws HashProviderException {
+
+        validateEmptyValue(value);
+        validateSalt(salt);
+        return calculateHash(value, salt, iterationCount, dkLength, pseudoRandomFunction);
+    }
+
     @Override
     public byte[] getHash(String value, String salt, Map<String, Object> metaProperties)
             throws HashProviderException {
 
         validateEmptyValue(value);
-        int iterationCount = resolveIterationCount(metaProperties);
+        validateSalt(salt);
+        int iterations = resolveIterationCount(metaProperties);
         int dkLen = resolveDerivedKeyLength(metaProperties);
-        String pseudoRandomFunction = resolvePseudoRandomFunction(metaProperties);
-        return pbkdf2HashCalculation(value, salt, iterationCount, dkLen, pseudoRandomFunction);
+        String prf = resolvePseudoRandomFunction(metaProperties);
+        return calculateHash(value, salt, iterations, dkLen, prf);
     }
 
     @Override
     public String getAlgorithm() {
 
-        return Constants.DEFAULT_HASHING_ALGORITHM;
+        return Constants.PBKDF2_HASHING_ALGORITHM;
     }
 
     /**
@@ -71,12 +100,11 @@ public class PBKDF2HashProvider implements HashProvider {
      * @return The resulting hash value of the value.
      * @throws HashProviderException If an error occurred while calculating the hash.
      */
-    private byte[] pbkdf2HashCalculation(String value, String salt, int iterationCount, int dkLength,
-                                         String pseudoRandomFunction)
+    private byte[] calculateHash(String value, String salt, int iterationCount, int dkLength,
+                                 String pseudoRandomFunction)
             throws HashProviderException {
 
         try {
-            validateSalt(salt);
             PBEKeySpec spec = new PBEKeySpec(value.toCharArray(), base64ToByteArray(salt), iterationCount, dkLength);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
             return skf.generateSecret(spec).getEncoded();
@@ -132,43 +160,43 @@ public class PBKDF2HashProvider implements HashProvider {
     /**
      * Resolve the iteration count according to the given meta properties.
      *
-     * @param metaProperties The properties map.
+     * @param properties The properties map.
      * @return The iteration count.
      */
-    private int resolveIterationCount(Map<String, Object> metaProperties) {
+    private int resolveIterationCount(Map<String, Object> properties) {
 
-        if (metaProperties.get(Constants.ITERATION_COUNT_PROPERTY) == null) {
+        if (!properties.containsKey(Constants.ITERATION_COUNT_PROPERTY)) {
             return Constants.DEFAULT_ITERATION_COUNT;
         }
-        return (int) metaProperties.get(Constants.ITERATION_COUNT_PROPERTY);
+        return (int) properties.get(Constants.ITERATION_COUNT_PROPERTY);
     }
 
     /**
      * Resolve derived key length from the metaProperties.
      *
-     * @param metaProperties The properties map.
+     * @param properties The properties map.
      * @return The derived key length.
      */
-    private int resolveDerivedKeyLength(Map<String, Object> metaProperties) {
+    private int resolveDerivedKeyLength(Map<String, Object> properties) {
 
-        if (metaProperties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY) == null) {
+        if (!properties.containsKey(Constants.DERIVED_KEY_LENGTH_PROPERTY)) {
             return Constants.DEFAULT_DERIVED_KEY_LENGTH;
         }
-        return (int) metaProperties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY);
+        return (int) properties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY);
     }
 
     /**
      * Resolve pseudo random function from the metaProperties.
      *
-     * @param metaProperties The properties map.
+     * @param properties The properties map.
      * @return The pseudo random function.
      */
-    private String resolvePseudoRandomFunction(Map<String, Object> metaProperties) {
+    private String resolvePseudoRandomFunction(Map<String, Object> properties) {
 
-        if (metaProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY) == null) {
+        if (!properties.containsKey(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY)) {
             return Constants.DEFAULT_PBKDF2_PRF;
         }
-        return (String) metaProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
+        return (String) properties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
     }
 
     /**

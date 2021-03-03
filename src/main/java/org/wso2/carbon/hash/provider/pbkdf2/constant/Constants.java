@@ -29,7 +29,7 @@ public class Constants {
     public static final String ITERATION_COUNT_PROPERTY = "pbkdf2.iterations";
     public static final String DERIVED_KEY_LENGTH_PROPERTY = "pbkdf2.dkLength";
 
-    public static final String DEFAULT_HASHING_ALGORITHM = "PBKDF2";
+    public static final String PBKDF2_HASHING_ALGORITHM = "PBKDF2";
     public static final String DEFAULT_PBKDF2_PRF = "PBKDF2WithHmacSHA256";
     public static final int DEFAULT_ITERATION_COUNT = 10000;
     public static final int DEFAULT_DERIVED_KEY_LENGTH = 256;

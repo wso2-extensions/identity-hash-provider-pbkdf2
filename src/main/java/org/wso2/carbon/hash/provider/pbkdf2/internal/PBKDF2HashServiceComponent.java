@@ -26,8 +26,8 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
-import org.wso2.carbon.hash.provider.pbkdf2.PBKDF2HashProvider;
-import org.wso2.carbon.user.core.hash.HashProvider;
+import org.wso2.carbon.hash.provider.pbkdf2.PBKDF2HashProviderFactory;
+import org.wso2.carbon.user.core.hash.HashProviderFactory;
 
 /**
  * This class contains the PBKDF2 hashing service component.
@@ -43,9 +43,9 @@ public class PBKDF2HashServiceComponent {
     @Activate
     protected void activate(ComponentContext ctxt) {
 
-        HashProvider hashProvider = new PBKDF2HashProvider();
-        ctxt.getBundleContext().registerService(HashProvider.class.getName(),
-                hashProvider, null);
+        HashProviderFactory hashProviderFactory = new PBKDF2HashProviderFactory();
+        ctxt.getBundleContext().registerService(HashProviderFactory.class.getName(),
+                hashProviderFactory, null);
         log.info("PBKDF2 bundle activated successfully.");
     }
 
