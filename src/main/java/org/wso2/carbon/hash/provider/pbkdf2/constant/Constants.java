@@ -23,7 +23,7 @@ package org.wso2.carbon.hash.provider.pbkdf2.constant;
  */
 public class Constants {
 
-    public static final String IDENTITY_HASH_PROVIDER_PBKDF2_ERROR_PREFIX = "UTA-";
+    public static final String PBKDF2_HASH_PROVIDER_ERROR_PREFIX = "PB2-";
 
     public static final String PSEUDO_RANDOM_FUNCTION_PROPERTY = "pbkdf2.prf";
     public static final String ITERATION_COUNT_PROPERTY = "pbkdf2.iterations";

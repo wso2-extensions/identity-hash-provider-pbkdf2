@@ -25,13 +25,17 @@ public enum ErrorMessage {
 
     // Client Errors.
     ERROR_CODE_EMPTY_VALUE("60001", "Empty value", "Value cannot be empty"),
+    ERROR_CODE_iNVALID_ITERATION_COUNT("60002", "Invalid iteration count",
+            "Iteration count should be positive"),
+    ERROR_CODE_INVALID_DERIVED_KEY_LENGTH("60003", "invalid derived key length",
+            "Derived key length should be positive"),
 
     // Server Errors.
-    ERROR_CODE_NO_SUCH_ALGORITHM("60501", "Pseudo Random Function was not detected",
-            "PRF was not detected in Secret Key Factory"),
-    ERROR_CODE_INVALID_KEY_SPEC("60502", "PBEKeySpec was invalid",
-            "This is the exception for invalid key specifications"),
-    ERROR_CODE_SALT_EMPTY_EXCEPTION("60503", "Invalid salt", "Salt is blank");
+    ERROR_CODE_NO_SUCH_ALGORITHM("60501", "Not supported pseudo random function",
+            "PRF was not supported by Secret Key Factory"),
+    ERROR_CODE_INVALID_KEY_SPEC("60502", "Secret key cannot be generated.",
+            "Secret key cannot be generated from SecretKeyFactory"),
+    ERROR_CODE_EMPTY_SALT_VALUE("60503", "Invalid salt", "Salt cannot be blank");
 
     private final String code;
     private final String message;
