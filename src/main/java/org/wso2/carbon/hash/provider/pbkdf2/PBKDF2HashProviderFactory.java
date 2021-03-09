@@ -22,6 +22,8 @@ import org.wso2.carbon.hash.provider.pbkdf2.constant.Constants;
 import org.wso2.carbon.user.core.hash.HashProvider;
 import org.wso2.carbon.user.core.hash.HashProviderFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +45,16 @@ public class PBKDF2HashProviderFactory implements HashProviderFactory {
         PBKDF2HashProvider pbkdf2HashProvider = new PBKDF2HashProvider();
         pbkdf2HashProvider.init(initProperties);
         return pbkdf2HashProvider;
+    }
+
+    @Override
+    public List<String> getMetaPropertyKeys() {
+
+        List<String> metaProperties = new ArrayList<>();
+        metaProperties.add(Constants.DERIVED_KEY_LENGTH_PROPERTY);
+        metaProperties.add(Constants.ITERATION_COUNT_PROPERTY);
+        metaProperties.add(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
+        return metaProperties;
     }
 
     @Override
