@@ -26,9 +26,9 @@ public enum ErrorMessage {
     // Client Errors.
     ERROR_CODE_EMPTY_VALUE("60001", "Empty value", "Value cannot be empty"),
     ERROR_CODE_iNVALID_ITERATION_COUNT("60002", "Invalid iteration count",
-            "Iteration count should be positive"),
+            "Iteration count should be a positive integer"),
     ERROR_CODE_INVALID_DERIVED_KEY_LENGTH("60003", "invalid derived key length",
-            "Derived key length should be positive"),
+            "Derived key length should be a positive integer"),
 
     // Server Errors.
     ERROR_CODE_NO_SUCH_ALGORITHM("60501", "Not supported pseudo random function",

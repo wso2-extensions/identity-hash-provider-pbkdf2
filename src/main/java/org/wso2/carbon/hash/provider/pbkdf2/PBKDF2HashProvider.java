@@ -65,12 +65,16 @@ public class PBKDF2HashProvider implements HashProvider {
         if (iterationCountObject == null) {
             iterationCount = Constants.DEFAULT_ITERATION_COUNT;
         } else {
-            iterationCount = (int) iterationCountObject;
+            if (iterationCountObject instanceof String) {
+                iterationCount = Integer.parseInt(iterationCountObject.toString());
+            }
         }
         if (dkLengthObject == null) {
             dkLength = Constants.DEFAULT_DERIVED_KEY_LENGTH;
         } else {
-            dkLength = (int) dkLengthObject;
+            if (dkLengthObject instanceof String) {
+                dkLength = Integer.parseInt(dkLengthObject.toString());
+            }
         }
         if (pseudoRandomFunctionObject == null) {
             pseudoRandomFunction = Constants.DEFAULT_PBKDF2_PRF;
