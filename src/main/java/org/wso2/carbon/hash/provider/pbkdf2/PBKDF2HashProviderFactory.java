@@ -24,8 +24,10 @@ import org.wso2.carbon.user.core.hash.HashProviderFactory;
 import org.wso2.carbon.user.core.model.hash.Config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The class contains the implementation of PBKDF2 HashProvider Factory.
@@ -65,9 +67,9 @@ public class PBKDF2HashProviderFactory implements HashProviderFactory {
     }
 
     @Override
-    public List<String> getHashProviderMetaProperties() {
+    public Set<String> getHashProviderMetaProperties() {
 
-        List<String> metaProperties = new ArrayList<>();
+        Set<String> metaProperties = new HashSet<>();
         metaProperties.add(Constants.ITERATION_COUNT_PROPERTY);
         metaProperties.add(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
         metaProperties.add(Constants.DERIVED_KEY_LENGTH_PROPERTY);
