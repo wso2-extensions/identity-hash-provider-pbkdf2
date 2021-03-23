@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -101,6 +102,15 @@ public class PBKDF2HashProvider implements HashProvider {
         int dkLen = resolveDerivedKeyLength(metaProperties);
         String prf = resolvePseudoRandomFunction(metaProperties);
         return calculateHash(value, salt, prf, iterations, dkLen);
+    }
+
+    @Override
+    public Map<String, Object> getParameters() {
+        Map<String, Object> pbkdf2HashProviderParams = new HashMap<>();
+        pbkdf2HashProviderParams.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);
+        pbkdf2HashProviderParams.put(Constants.DERIVED_KEY_LENGTH_PROPERTY, dkLength);
+        pbkdf2HashProviderParams.put(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY, pseudoRandomFunction);
+        return pbkdf2HashProviderParams;
     }
 
     @Override
