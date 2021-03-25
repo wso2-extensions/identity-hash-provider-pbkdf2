@@ -23,7 +23,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.hash.provider.pbkdf2.constant.Constants;
+import org.wso2.carbon.user.core.exceptions.HashProviderClientException;
 import org.wso2.carbon.user.core.exceptions.HashProviderException;
+import org.wso2.carbon.user.core.exceptions.HashProviderServerException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -93,17 +95,20 @@ public class PBKDF2HashProviderTest {
         pbkdf2HashProvider.init(initProperties);
         Map<String, Object> pbkdf2Params = pbkdf2HashProvider.getParameters();
         if (iterationCount == null) {
-            Assert.assertEquals(pbkdf2Params.get(Constants.ITERATION_COUNT_PROPERTY), Constants.DEFAULT_ITERATION_COUNT);
+            Assert.assertEquals(pbkdf2Params.get(Constants.ITERATION_COUNT_PROPERTY),
+                    Constants.DEFAULT_ITERATION_COUNT);
         } else {
             Assert.assertEquals(pbkdf2Params.get(Constants.ITERATION_COUNT_PROPERTY), Integer.parseInt(iterationCount));
         }
         if (dkLength == null) {
-            Assert.assertEquals(pbkdf2Params.get(Constants.DERIVED_KEY_LENGTH_PROPERTY), Constants.DEFAULT_DERIVED_KEY_LENGTH);
+            Assert.assertEquals(pbkdf2Params.get(Constants.DERIVED_KEY_LENGTH_PROPERTY),
+                    Constants.DEFAULT_DERIVED_KEY_LENGTH);
         } else {
             Assert.assertEquals(pbkdf2Params.get(Constants.DERIVED_KEY_LENGTH_PROPERTY), Integer.parseInt(dkLength));
         }
         if (pseudoRandomFunction == null) {
-            Assert.assertEquals(pbkdf2Params.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY), Constants.DEFAULT_PBKDF2_PRF);
+            Assert.assertEquals(pbkdf2Params.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY),
+                    Constants.DEFAULT_PBKDF2_PRF);
         } else {
             Assert.assertEquals(pbkdf2Params.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY), pseudoRandomFunction);
         }
@@ -127,12 +132,44 @@ public class PBKDF2HashProviderTest {
     public void testGetHash(String value, String salt, String iterationCount, String dkLength,
                             String pseudoRandomFunction, byte[] hash) throws HashProviderException {
 
-        initProperties = new HashMap<>();
-        initProperties.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);
-        initProperties.put(Constants.DERIVED_KEY_LENGTH_PROPERTY, dkLength);
-        initProperties.put(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY, pseudoRandomFunction);
-        pbkdf2HashProvider.init(initProperties);
+        initializeHashProvider(iterationCount, dkLength, pseudoRandomFunction);
         Assert.assertEquals(pbkdf2HashProvider.getHash(value, salt), hash);
+    }
+
+    @DataProvider(name = "getHashExceptionHandling")
+    public Object[][] getHashExceptionHandling() {
+
+        return new Object[][]{
+                {"", "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
+                        ErrorMessage.ERROR_CODE_EMPTY_VALUE.getCode()},
+                {"wso2123", "", "10000", "256", "PBKDF2WithHmacSHA256",
+                        ErrorMessage.ERROR_CODE_EMPTY_SALT_VALUE.getCode()},
+                {"    ", "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
+                        ErrorMessage.ERROR_CODE_EMPTY_VALUE.getCode()},
+                {"john12", "    ", "10000", "256", "PBKDF2WithHmacSHA256",
+                        ErrorMessage.ERROR_CODE_EMPTY_SALT_VALUE.getCode()},
+                {"hello123", "GzgyTT0M0TSvgMaXZEbD1Q==", "-3", "256", "PBKDF2WithHmacSHA256",
+                        ErrorMessage.ERROR_CODE_iNVALID_ITERATION_COUNT.getCode()},
+                {"qwerty", "GzgyTT0M0TSvgMaXZEbD1Q==", "1000", "-5", "PBKDF2WithHmacSHA256",
+                        ErrorMessage.ERROR_CODE_INVALID_DERIVED_KEY_LENGTH.getCode()},
+                {"qwerty", "GzgyTT0M0TSvgMaXZEbD1Q==", "1000", "256", "Algo",
+                        ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode()},
+        };
+    }
+
+    @Test(dataProvider = "getHashExceptionHandling")
+    public void testGetHashExceptionHandling(String value, String salt, String iterationCount, String dkLength,
+                                             String pseudoRandomFunction, String errorCodeExpected)
+            throws HashProviderException {
+
+        initializeHashProvider(iterationCount, dkLength, pseudoRandomFunction);
+        try {
+            pbkdf2HashProvider.getHash(value, salt);
+        } catch (HashProviderClientException e) {
+            Assert.assertEquals(e.getErrorCode().substring(4), errorCodeExpected);
+        } catch (HashProviderServerException e) {
+            Assert.assertEquals(e.getErrorCode().substring(4), errorCodeExpected);
+        }
     }
 
     @DataProvider(name = "getHashWithMetaProp")
@@ -153,7 +190,8 @@ public class PBKDF2HashProviderTest {
 
     @Test(dataProvider = "getHashWithMetaProp")
     public void testGetHashWithMetaProp(String value, Object iterationCount, Object dkLength,
-                                        Object pseudoRandomFunction, String salt, byte[] hash) throws HashProviderException {
+                                        Object pseudoRandomFunction, String salt, byte[] hash)
+            throws HashProviderException {
 
         pbkdf2HashProvider.init();
         Map<String, Object> metaProperties = new HashMap<>();
@@ -172,20 +210,40 @@ public class PBKDF2HashProviderTest {
     @Test
     public void testGetAlgorithm() {
 
-        String expectedAlgorithm = "PBKDF2";
-        Assert.assertEquals(pbkdf2HashProvider.getAlgorithm(), expectedAlgorithm);
+        Assert.assertEquals(pbkdf2HashProvider.getAlgorithm(), Constants.PBKDF2_HASHING_ALGORITHM);
     }
 
-    private static byte[] hexStringToByteArray(String s) {
+    /**
+     * Convert hexadecimal format string to byte array.
+     *
+     * @param hexadecimal Hexadecimal format string.
+     * @return Converted byte array.
+     */
+    private static byte[] hexStringToByteArray(String hexadecimal) {
 
-        int len = s.length();
+        int len = hexadecimal.length();
         byte[] data = new byte[len / 2];
 
         for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16));
+            data[i / 2] = (byte) ((Character.digit(hexadecimal.charAt(i), 16) << 4)
+                    + Character.digit(hexadecimal.charAt(i + 1), 16));
         }
         return data;
     }
 
+    /**
+     * Initializing the HashProvider with given meta properties.
+     *
+     * @param iterationCount       The iteration count.
+     * @param dkLength             The derived key length.
+     * @param pseudoRandomFunction The pseudo random function.
+     */
+    private void initializeHashProvider(String iterationCount, String dkLength, String pseudoRandomFunction) {
+
+        initProperties = new HashMap<>();
+        initProperties.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);
+        initProperties.put(Constants.DERIVED_KEY_LENGTH_PROPERTY, dkLength);
+        initProperties.put(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY, pseudoRandomFunction);
+        pbkdf2HashProvider.init(initProperties);
+    }
 }

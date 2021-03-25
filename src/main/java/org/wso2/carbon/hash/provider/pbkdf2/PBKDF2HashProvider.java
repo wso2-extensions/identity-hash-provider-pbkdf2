@@ -106,6 +106,7 @@ public class PBKDF2HashProvider implements HashProvider {
 
     @Override
     public Map<String, Object> getParameters() {
+
         Map<String, Object> pbkdf2HashProviderParams = new HashMap<>();
         pbkdf2HashProviderParams.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);
         pbkdf2HashProviderParams.put(Constants.DERIVED_KEY_LENGTH_PROPERTY, dkLength);

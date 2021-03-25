@@ -34,15 +34,6 @@ public class Constants {
     public static final int DEFAULT_ITERATION_COUNT = 10000;
     public static final int DEFAULT_DERIVED_KEY_LENGTH = 256;
 
-    public static final String PBKDF2_ITERATION_COUNT_DISPLAY_NAME = "Iteration Count";
-    public static final String PBKDF2_DERIVED_KEY_DISPLAY_NAME = "Derived Key Length";
-    public static final String PBKDF2_PSEUDO_RANDOM_FUNCTION_DISPLAY_NAME = "Pseudo Random Function";
-
-    public static final String PBKDF2_ITERATION_COUNT_DESCRIPTION = "The number of times Pseudo Random Function " +
-            "needs to be iterated";
-    public static final String PBKDF2_DERIVED_KEY_DESCRIPTION = "The output hash length in bits";
-    public static final String PBKDF2_PSEUDO_RANDOM_FUNCTION_DESCRIPTION = "The key hash function of PBKDF2";
-
     private Constants() {
 
     }

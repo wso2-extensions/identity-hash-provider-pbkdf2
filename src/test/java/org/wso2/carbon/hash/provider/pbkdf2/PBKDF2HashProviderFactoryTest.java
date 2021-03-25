@@ -42,7 +42,6 @@ public class PBKDF2HashProviderFactoryTest {
     public void initialize() {
 
         pbkdf2HashProviderFactory = new PBKDF2HashProviderFactory();
-
     }
 
     @Test
@@ -50,31 +49,36 @@ public class PBKDF2HashProviderFactoryTest {
 
         pbkdf2HashProvider = pbkdf2HashProviderFactory.getHashProvider();
         Map<String, Object> pbkdf2ParamsMap = pbkdf2HashProvider.getParameters();
-        Assert.assertEquals(pbkdf2ParamsMap.get(Constants.ITERATION_COUNT_PROPERTY),Constants.DEFAULT_ITERATION_COUNT);
-        Assert.assertEquals(pbkdf2ParamsMap.get(Constants.DERIVED_KEY_LENGTH_PROPERTY),Constants.DEFAULT_DERIVED_KEY_LENGTH);
-        Assert.assertEquals(pbkdf2ParamsMap.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY),Constants.DEFAULT_PBKDF2_PRF);
-
+        Assert.assertEquals(pbkdf2ParamsMap.get(Constants.ITERATION_COUNT_PROPERTY), Constants.DEFAULT_ITERATION_COUNT);
+        Assert.assertEquals(pbkdf2ParamsMap.get(Constants.DERIVED_KEY_LENGTH_PROPERTY),
+                Constants.DEFAULT_DERIVED_KEY_LENGTH);
+        Assert.assertEquals(pbkdf2ParamsMap.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY),
+                Constants.DEFAULT_PBKDF2_PRF);
     }
 
     @DataProvider(name = "getHashProviderWithParams")
     public Object[][] getHashProviderWithParams() {
-        return new Object[][] {
+
+        return new Object[][]{
                 {"5000", "160", "PBKDF2WithHmacSHA1"},
                 {"15000", "512", "PBKDF2WithHmacSHA512"}
         };
     }
 
-    @Test (dataProvider = "getHashProviderWithParams")
-    public void testGetHashProviderWithParams (String iterationCount, String dkLength, String pseudoRandomFunction) {
+    @Test(dataProvider = "getHashProviderWithParams")
+    public void testGetHashProviderWithParams(String iterationCount, String dkLength, String pseudoRandomFunction) {
+
         Map<String, Object> pbkdf2Params = new HashMap<>();
         pbkdf2Params.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);
         pbkdf2Params.put(Constants.DERIVED_KEY_LENGTH_PROPERTY, dkLength);
         pbkdf2Params.put(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY, pseudoRandomFunction);
         pbkdf2HashProvider = pbkdf2HashProviderFactory.getHashProvider(pbkdf2Params);
-        Assert.assertEquals(pbkdf2HashProvider.getParameters().get(Constants.ITERATION_COUNT_PROPERTY), Integer.parseInt(iterationCount));
-        Assert.assertEquals(pbkdf2HashProvider.getParameters().get(Constants.DERIVED_KEY_LENGTH_PROPERTY), Integer.parseInt(dkLength));
-        Assert.assertEquals(pbkdf2HashProvider.getParameters().get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY), pseudoRandomFunction);
-
+        Assert.assertEquals(pbkdf2HashProvider.getParameters().get(Constants.ITERATION_COUNT_PROPERTY),
+                Integer.parseInt(iterationCount));
+        Assert.assertEquals(pbkdf2HashProvider.getParameters().get(Constants.DERIVED_KEY_LENGTH_PROPERTY),
+                Integer.parseInt(dkLength));
+        Assert.assertEquals(pbkdf2HashProvider.getParameters().get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY),
+                pseudoRandomFunction);
     }
 
     @Test
@@ -85,15 +89,12 @@ public class PBKDF2HashProviderFactoryTest {
         metaPropertiesExpected.add(Constants.ITERATION_COUNT_PROPERTY);
         metaPropertiesExpected.add(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
         metaPropertiesExpected.add(Constants.DERIVED_KEY_LENGTH_PROPERTY);
-        Assert.assertEquals(metaPropertiesActual,metaPropertiesExpected);
-
+        Assert.assertEquals(metaPropertiesActual, metaPropertiesExpected);
     }
 
     @Test
     public void testGetType() {
-        Assert.assertEquals(pbkdf2HashProviderFactory.getType(),Constants.PBKDF2_HASHING_ALGORITHM);
+
+        Assert.assertEquals(pbkdf2HashProviderFactory.getType(), Constants.PBKDF2_HASHING_ALGORITHM);
     }
-
-
-
 }

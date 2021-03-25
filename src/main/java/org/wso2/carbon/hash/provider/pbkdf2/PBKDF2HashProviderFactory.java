@@ -21,11 +21,8 @@ package org.wso2.carbon.hash.provider.pbkdf2;
 import org.wso2.carbon.hash.provider.pbkdf2.constant.Constants;
 import org.wso2.carbon.user.core.hash.HashProvider;
 import org.wso2.carbon.user.core.hash.HashProviderFactory;
-import org.wso2.carbon.user.core.model.hash.Config;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,22 +45,6 @@ public class PBKDF2HashProviderFactory implements HashProviderFactory {
         PBKDF2HashProvider pbkdf2HashProvider = new PBKDF2HashProvider();
         pbkdf2HashProvider.init(initProperties);
         return pbkdf2HashProvider;
-    }
-
-    @Override
-    public List<Config> getHashProviderConfig() {
-
-        List<Config> hashProviderConfig = new ArrayList<>();
-        hashProviderConfig.add(new PBKDF2Config(Constants.ITERATION_COUNT_PROPERTY,
-                Constants.PBKDF2_ITERATION_COUNT_DISPLAY_NAME, Constants.PBKDF2_ITERATION_COUNT_DESCRIPTION,
-                Integer.toString(Constants.DEFAULT_ITERATION_COUNT)));
-        hashProviderConfig.add(new PBKDF2Config(Constants.DERIVED_KEY_LENGTH_PROPERTY,
-                Constants.PBKDF2_DERIVED_KEY_DISPLAY_NAME, Constants.PBKDF2_DERIVED_KEY_DESCRIPTION,
-                Integer.toString(Constants.DEFAULT_DERIVED_KEY_LENGTH)));
-        hashProviderConfig.add(new PBKDF2Config(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY,
-                Constants.PBKDF2_PSEUDO_RANDOM_FUNCTION_DISPLAY_NAME,
-                Constants.PBKDF2_PSEUDO_RANDOM_FUNCTION_DESCRIPTION, Constants.DEFAULT_PBKDF2_PRF));
-        return hashProviderConfig;
     }
 
     @Override
