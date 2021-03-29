@@ -19,6 +19,7 @@
 package org.wso2.carbon.hash.provider.pbkdf2;
 
 import org.wso2.carbon.hash.provider.pbkdf2.constant.Constants;
+import org.wso2.carbon.user.core.exceptions.HashProviderException;
 import org.wso2.carbon.user.core.hash.HashProvider;
 import org.wso2.carbon.user.core.hash.HashProviderFactory;
 
@@ -40,7 +41,7 @@ public class PBKDF2HashProviderFactory implements HashProviderFactory {
     }
 
     @Override
-    public HashProvider getHashProvider(Map<String, Object> initProperties) {
+    public HashProvider getHashProvider(Map<String, Object> initProperties) throws HashProviderException {
 
         PBKDF2HashProvider pbkdf2HashProvider = new PBKDF2HashProvider();
         pbkdf2HashProvider.init(initProperties);
@@ -48,7 +49,7 @@ public class PBKDF2HashProviderFactory implements HashProviderFactory {
     }
 
     @Override
-    public Set<String> getHashProviderMetaProperties() {
+    public Set<String> getHashProviderConfigProperties() {
 
         Set<String> metaProperties = new HashSet<>();
         metaProperties.add(Constants.ITERATION_COUNT_PROPERTY);
@@ -58,7 +59,7 @@ public class PBKDF2HashProviderFactory implements HashProviderFactory {
     }
 
     @Override
-    public String getType() {
+    public String getAlgorithm() {
 
         return Constants.PBKDF2_HASHING_ALGORITHM;
     }

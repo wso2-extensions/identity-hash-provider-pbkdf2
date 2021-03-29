@@ -23,6 +23,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.hash.provider.pbkdf2.constant.Constants;
+import org.wso2.carbon.user.core.exceptions.HashProviderException;
 import org.wso2.carbon.user.core.hash.HashProvider;
 
 import java.util.HashMap;
@@ -42,6 +43,23 @@ public class PBKDF2HashProviderFactoryTest {
     public void initialize() {
 
         pbkdf2HashProviderFactory = new PBKDF2HashProviderFactory();
+    }
+
+    @Test
+    public void testGetConfigProperties() {
+
+        Set<String> metaPropertiesActual = pbkdf2HashProviderFactory.getHashProviderConfigProperties();
+        Set<String> metaPropertiesExpected = new HashSet<>();
+        metaPropertiesExpected.add(Constants.ITERATION_COUNT_PROPERTY);
+        metaPropertiesExpected.add(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
+        metaPropertiesExpected.add(Constants.DERIVED_KEY_LENGTH_PROPERTY);
+        Assert.assertEquals(metaPropertiesActual, metaPropertiesExpected);
+    }
+
+    @Test
+    public void testGetAlgorithm() {
+
+        Assert.assertEquals(pbkdf2HashProviderFactory.getAlgorithm(), Constants.PBKDF2_HASHING_ALGORITHM);
     }
 
     @Test
@@ -66,7 +84,8 @@ public class PBKDF2HashProviderFactoryTest {
     }
 
     @Test(dataProvider = "getHashProviderWithParams")
-    public void testGetHashProviderWithParams(String iterationCount, String dkLength, String pseudoRandomFunction) {
+    public void testGetHashProviderWithParams(String iterationCount, String dkLength, String pseudoRandomFunction)
+            throws HashProviderException {
 
         Map<String, Object> pbkdf2Params = new HashMap<>();
         pbkdf2Params.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);
@@ -79,22 +98,5 @@ public class PBKDF2HashProviderFactoryTest {
                 Integer.parseInt(dkLength));
         Assert.assertEquals(pbkdf2HashProvider.getParameters().get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY),
                 pseudoRandomFunction);
-    }
-
-    @Test
-    public void testGetMetaProperties() {
-
-        Set<String> metaPropertiesActual = pbkdf2HashProviderFactory.getHashProviderMetaProperties();
-        Set<String> metaPropertiesExpected = new HashSet<>();
-        metaPropertiesExpected.add(Constants.ITERATION_COUNT_PROPERTY);
-        metaPropertiesExpected.add(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
-        metaPropertiesExpected.add(Constants.DERIVED_KEY_LENGTH_PROPERTY);
-        Assert.assertEquals(metaPropertiesActual, metaPropertiesExpected);
-    }
-
-    @Test
-    public void testGetType() {
-
-        Assert.assertEquals(pbkdf2HashProviderFactory.getType(), Constants.PBKDF2_HASHING_ALGORITHM);
     }
 }

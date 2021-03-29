@@ -79,7 +79,8 @@ public class PBKDF2HashProviderTest {
     }
 
     @Test(dataProvider = "initConfigParams")
-    public void testInitConfigParams(String iterationCount, String dkLength, String pseudoRandomFunction) {
+    public void testInitConfigParams(String iterationCount, String dkLength, String pseudoRandomFunction)
+            throws HashProviderException {
 
         Map<String, Object> initProperties = new HashMap<>();
 
@@ -118,93 +119,56 @@ public class PBKDF2HashProviderTest {
     public Object[][] getHash() {
 
         return new Object[][]{
-                {"vijee123", "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
+                {"vijee123".toCharArray(), "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
                         hexStringToByteArray("768b3558e3b5dc7bf4d5b27da4b71dee")},
-                {"nisho123", "GzgyTT0M0TSvgMaXZEbD1Q==", "10000", "256", "PBKDF2WithHmacSHA256",
-                        hexStringToByteArray("295fe5dbc666f75b31ff15a57b2582968a0f7dc6f53cd6799c0d0e3971626061")},
-                {"john123", "GzgyTT0IOweHJgcXZEbD1Q==", "25000", "512", "PBKDF2WithHmacSHA1",
-                        hexStringToByteArray("fad16c9ffc6f877b4b2cfada3596dcef4259ccaa7240c1a9ac64731b58c0c0" +
-                                "d59653cf98e599f84212ea52fdcd507d7063d9601444594ff817a5de6f930ee374")}
+                {"nisho123".toCharArray(), "GzgyTT0M0TSvgMaXZEbD1Q==", "10000", "256", "PBKDF2WithHmacSHA256",
+                        hexStringToByteArray(
+                                "295fe5dbc666f75b31ff15a57b2582968a0f7dc6f53cd6799c0d0e3971626061")},
+                {"john123".toCharArray(), "GzgyTT0IOweHJgcXZEbD1Q==", "25000", "512", "PBKDF2WithHmacSHA1",
+                        hexStringToByteArray(
+                                "fad16c9ffc6f877b4b2cfada3596dcef4259ccaa7240c1a9ac64731b58c0c0" +
+                                        "d59653cf98e599f84212ea52fdcd507d7063d9601444594ff817a5de6f930ee374")}
         };
     }
 
     @Test(dataProvider = "getHash")
-    public void testGetHash(String value, String salt, String iterationCount, String dkLength,
+    public void testGetHash(char[] plainText, String salt, String iterationCount, String dkLength,
                             String pseudoRandomFunction, byte[] hash) throws HashProviderException {
 
         initializeHashProvider(iterationCount, dkLength, pseudoRandomFunction);
-        Assert.assertEquals(pbkdf2HashProvider.getHash(value, salt), hash);
+        Assert.assertEquals(pbkdf2HashProvider.calculateHash(plainText, salt), hash);
     }
 
-    @DataProvider(name = "getHashExceptionHandling")
-    public Object[][] getHashExceptionHandling() {
+    @DataProvider(name = "hashProviderErrorScenarios")
+    public Object[][] hashProviderErrorScenarios() {
 
         return new Object[][]{
-                {"", "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
+                {"".toCharArray(), "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
                         ErrorMessage.ERROR_CODE_EMPTY_VALUE.getCode()},
-                {"wso2123", "", "10000", "256", "PBKDF2WithHmacSHA256",
+                {"wso2123".toCharArray(), "", "10000", "256", "PBKDF2WithHmacSHA256",
                         ErrorMessage.ERROR_CODE_EMPTY_SALT_VALUE.getCode()},
-                {"    ", "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
+                {"    ".toCharArray(), "GzgyTT0M0TSvgMaXZEbD1Q==", "20000", "128", "PBKDF2WithHmacSHA256",
                         ErrorMessage.ERROR_CODE_EMPTY_VALUE.getCode()},
-                {"john12", "    ", "10000", "256", "PBKDF2WithHmacSHA256",
+                {"john12".toCharArray(), "    ", "10000", "256", "PBKDF2WithHmacSHA256",
                         ErrorMessage.ERROR_CODE_EMPTY_SALT_VALUE.getCode()},
-                {"hello123", "GzgyTT0M0TSvgMaXZEbD1Q==", "-3", "256", "PBKDF2WithHmacSHA256",
-                        ErrorMessage.ERROR_CODE_iNVALID_ITERATION_COUNT.getCode()},
-                {"qwerty", "GzgyTT0M0TSvgMaXZEbD1Q==", "1000", "-5", "PBKDF2WithHmacSHA256",
-                        ErrorMessage.ERROR_CODE_INVALID_DERIVED_KEY_LENGTH.getCode()},
-                {"qwerty", "GzgyTT0M0TSvgMaXZEbD1Q==", "1000", "256", "Algo",
+                {"qwerty".toCharArray(), "GzgyTT0M0TSvgMaXZEbD1Q==", "1000", "256", "Algo",
                         ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode()},
         };
     }
 
-    @Test(dataProvider = "getHashExceptionHandling")
-    public void testGetHashExceptionHandling(String value, String salt, String iterationCount, String dkLength,
-                                             String pseudoRandomFunction, String errorCodeExpected)
+    @Test(dataProvider = "hashProviderErrorScenarios")
+    public void testHashProviderErrorScenarios(char[] plainText, String salt, String iterationCount, String dkLength,
+                                               String pseudoRandomFunction, String errorCodeExpected)
             throws HashProviderException {
 
         initializeHashProvider(iterationCount, dkLength, pseudoRandomFunction);
         try {
-            pbkdf2HashProvider.getHash(value, salt);
+            pbkdf2HashProvider.calculateHash(plainText, salt);
         } catch (HashProviderClientException e) {
             Assert.assertEquals(e.getErrorCode().substring(4), errorCodeExpected);
         } catch (HashProviderServerException e) {
             Assert.assertEquals(e.getErrorCode().substring(4), errorCodeExpected);
         }
-    }
-
-    @DataProvider(name = "getHashWithMetaProp")
-    public Object[][] getHashWithMetaProp() {
-
-        return new Object[][]{
-                {"qwerty123", 2000, 256, "PBKDF2WithHmacSHA256", "GzgyTT0M0TSvgMaXZEbD1Q==",
-                        hexStringToByteArray("ef6504590bc489a7b8403ae5546b782f511c2704592124647f8a521071979243")},
-                {"happy1234", null, 512, "PBKDF2WithHmacSHA1", "c4qitc/+6b0SYmVPM5YrHg==",
-                        hexStringToByteArray("45e3b8ca0927d5a8a7502596a0e008614c846b6a52cfa1ce1c85095ff1e4e66a0483" +
-                                "05d9e8300380c7ab6e23163c2ee11fbdc696f1350b20598646c2c5ebe530")},
-                {"password", 15000, null, "PBKDF2WithHmacSHA512", "SEBcVMSL4EjBVZAvvNF3jg==",
-                        hexStringToByteArray("72fcc72d1b900548d9da061340297e7de4033422c1e6eae8dff0a1e9998b1847")},
-                {"hello123", 25000, 256, null, "GBeDIRPMA2tis5JwoO9c4g==",
-                        hexStringToByteArray("41b26a3e614d1faf05812b51b5e8bb6c3f691a0aebe83e0ad22c7171058f8aad")}
-        };
-    }
-
-    @Test(dataProvider = "getHashWithMetaProp")
-    public void testGetHashWithMetaProp(String value, Object iterationCount, Object dkLength,
-                                        Object pseudoRandomFunction, String salt, byte[] hash)
-            throws HashProviderException {
-
-        pbkdf2HashProvider.init();
-        Map<String, Object> metaProperties = new HashMap<>();
-        if (iterationCount != null) {
-            metaProperties.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);
-        }
-        if (dkLength != null) {
-            metaProperties.put(Constants.DERIVED_KEY_LENGTH_PROPERTY, dkLength);
-        }
-        if (pseudoRandomFunction != null) {
-            metaProperties.put(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY, pseudoRandomFunction);
-        }
-        Assert.assertEquals(pbkdf2HashProvider.getHash(value, salt, metaProperties), hash);
     }
 
     @Test
@@ -238,7 +202,8 @@ public class PBKDF2HashProviderTest {
      * @param dkLength             The derived key length.
      * @param pseudoRandomFunction The pseudo random function.
      */
-    private void initializeHashProvider(String iterationCount, String dkLength, String pseudoRandomFunction) {
+    private void initializeHashProvider(String iterationCount, String dkLength, String pseudoRandomFunction)
+            throws HashProviderException {
 
         initProperties = new HashMap<>();
         initProperties.put(Constants.ITERATION_COUNT_PROPERTY, iterationCount);

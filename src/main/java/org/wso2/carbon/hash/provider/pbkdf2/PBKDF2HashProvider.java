@@ -57,51 +57,50 @@ public class PBKDF2HashProvider implements HashProvider {
     }
 
     @Override
-    public void init(Map<String, Object> initProperties) {
+    public void init(Map<String, Object> initProperties) throws HashProviderException {
 
+        init();
         Object iterationCountObject = initProperties.get(Constants.ITERATION_COUNT_PROPERTY);
         Object dkLengthObject = initProperties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY);
         Object pseudoRandomFunctionObject = initProperties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
 
-        if (iterationCountObject == null) {
-            iterationCount = Constants.DEFAULT_ITERATION_COUNT;
-        } else {
+        if (iterationCountObject != null) {
             if (iterationCountObject instanceof String) {
-                iterationCount = Integer.parseInt(iterationCountObject.toString());
+                try {
+                    iterationCount = Integer.parseInt(iterationCountObject.toString());
+                } catch (NumberFormatException e) {
+                    throw new HashProviderClientException(
+                            ErrorMessage.ERROR_CODE_INVALID_ITERATION_COUNT.getDescription(),
+                            Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX +
+                                    ErrorMessage.ERROR_CODE_INVALID_ITERATION_COUNT.getCode());
+                }
+                validateIterationCount(iterationCount);
             }
         }
-        if (dkLengthObject == null) {
-            dkLength = Constants.DEFAULT_DERIVED_KEY_LENGTH;
-        } else {
+        if (dkLengthObject != null) {
             if (dkLengthObject instanceof String) {
-                dkLength = Integer.parseInt(dkLengthObject.toString());
+                try {
+                    dkLength = Integer.parseInt(dkLengthObject.toString());
+                } catch (NumberFormatException e) {
+                    throw new HashProviderClientException(
+                            ErrorMessage.ERROR_CODE_INVALID_DERIVED_KEY_LENGTH.getDescription(),
+                            Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX +
+                                    ErrorMessage.ERROR_CODE_INVALID_DERIVED_KEY_LENGTH.getCode());
+                }
+                validateDerivedKeyLength(dkLength);
             }
         }
-        if (pseudoRandomFunctionObject == null) {
-            pseudoRandomFunction = Constants.DEFAULT_PBKDF2_PRF;
-        } else {
+        if (pseudoRandomFunctionObject != null) {
             pseudoRandomFunction = (String) pseudoRandomFunctionObject;
         }
     }
 
     @Override
-    public byte[] getHash(String value, String salt) throws HashProviderException {
+    public byte[] calculateHash(char[] plainText, String salt) throws HashProviderException {
 
-        validateEmptyValue(value);
+        validateEmptyValue(plainText);
         validateEmptySalt(salt);
-        return calculateHash(value, salt, pseudoRandomFunction, iterationCount, dkLength);
-    }
-
-    @Override
-    public byte[] getHash(String value, String salt, Map<String, Object> metaProperties)
-            throws HashProviderException {
-
-        validateEmptyValue(value);
-        validateEmptySalt(salt);
-        int iterations = resolveIterationCount(metaProperties);
-        int dkLen = resolveDerivedKeyLength(metaProperties);
-        String prf = resolvePseudoRandomFunction(metaProperties);
-        return calculateHash(value, salt, prf, iterations, dkLen);
+        return calculateHash(plainText, salt, pseudoRandomFunction, iterationCount, dkLength);
     }
 
     @Override
@@ -123,7 +122,7 @@ public class PBKDF2HashProvider implements HashProvider {
     /**
      * Calculate hash value according to the given parameters.
      *
-     * @param value                Value to be hashed.
+     * @param plainText            The plain text value to be hashed.
      * @param salt                 The salt.
      * @param pseudoRandomFunction PRF function which needs to be used for PBKDF2 hashing.
      * @param iterationCount       Number of iterations to be used by the PRF.
@@ -131,23 +130,22 @@ public class PBKDF2HashProvider implements HashProvider {
      * @return The resulting hash value of the value.
      * @throws HashProviderException If an error occurred while calculating the hash.
      */
-    private byte[] calculateHash(String value, String salt,
+    private byte[] calculateHash(char[] plainText, String salt,
                                  String pseudoRandomFunction, int iterationCount, int dkLength)
             throws HashProviderException {
 
         try {
-            validateIterationCount(iterationCount);
-            validateDerivedKeyLength(dkLength);
-            PBEKeySpec spec = new PBEKeySpec(value.toCharArray(), base64ToByteArray(salt), iterationCount, dkLength);
+            PBEKeySpec spec = new PBEKeySpec(plainText, base64ToByteArray(salt), iterationCount, dkLength);
             SecretKeyFactory skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
             return skf.generateSecret(spec).getEncoded();
         } catch (NoSuchAlgorithmException e) {
             if (log.isDebugEnabled()) {
-                log.debug(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
+                log.debug(pseudoRandomFunction + " " +
+                        ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
             }
-            throw new HashProviderServerException(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
-                    Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX +
-                            ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode());
+            throw new HashProviderServerException(pseudoRandomFunction + " " +
+                    ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
+                    Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX + ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode());
         } catch (InvalidKeySpecException e) {
             if (log.isDebugEnabled()) {
                 log.debug(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(), e);
@@ -161,12 +159,12 @@ public class PBKDF2HashProvider implements HashProvider {
     /**
      * This method is responsible fpr validating the value to be hashed.
      *
-     * @param value The value which needs to be hashed.
+     * @param plainText The value which needs to be hashed.
      * @throws HashProviderClientException If the hash value is not provided.
      */
-    private void validateEmptyValue(String value) throws HashProviderClientException {
+    private void validateEmptyValue(char[] plainText) throws HashProviderClientException {
 
-        if (StringUtils.isBlank(value)) {
+        if (plainText.length == 0) {
             throw new HashProviderClientException(
                     ErrorMessage.ERROR_CODE_EMPTY_VALUE.getDescription(),
                     Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX +
@@ -200,9 +198,9 @@ public class PBKDF2HashProvider implements HashProvider {
 
         if (iterationCount <= 0) {
             throw new HashProviderClientException(
-                    ErrorMessage.ERROR_CODE_iNVALID_ITERATION_COUNT.getDescription(),
+                    ErrorMessage.ERROR_CODE_INVALID_ITERATION_COUNT.getDescription(),
                     Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX +
-                            ErrorMessage.ERROR_CODE_iNVALID_ITERATION_COUNT.getCode());
+                            ErrorMessage.ERROR_CODE_INVALID_ITERATION_COUNT.getCode());
         }
     }
 
@@ -220,54 +218,6 @@ public class PBKDF2HashProvider implements HashProvider {
                     Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX +
                             ErrorMessage.ERROR_CODE_INVALID_DERIVED_KEY_LENGTH.getCode());
         }
-    }
-
-    /**
-     * Resolve the iteration count according to the given meta properties.
-     *
-     * @param properties The properties map.
-     * @return The iteration count.
-     */
-    private int resolveIterationCount(Map<String, Object> properties) {
-
-        Object iterationCountObject = properties.get(Constants.ITERATION_COUNT_PROPERTY);
-
-        if (iterationCountObject == null) {
-            return iterationCount;
-        }
-        return (int) properties.get(Constants.ITERATION_COUNT_PROPERTY);
-    }
-
-    /**
-     * Resolve derived key length from the metaProperties.
-     *
-     * @param properties The properties map.
-     * @return The derived key length.
-     */
-    private int resolveDerivedKeyLength(Map<String, Object> properties) {
-
-        Object dkLengthObject = properties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY);
-
-        if (dkLengthObject == null) {
-            return dkLength;
-        }
-        return (int) properties.get(Constants.DERIVED_KEY_LENGTH_PROPERTY);
-    }
-
-    /**
-     * Resolve pseudo random function from the metaProperties.
-     *
-     * @param properties The properties map.
-     * @return The pseudo random function.
-     */
-    private String resolvePseudoRandomFunction(Map<String, Object> properties) {
-
-        Object pseudoRandomFunctionObject = properties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
-
-        if (pseudoRandomFunctionObject == null) {
-            return pseudoRandomFunction;
-        }
-        return (String) properties.get(Constants.PSEUDO_RANDOM_FUNCTION_PROPERTY);
     }
 
     /**
