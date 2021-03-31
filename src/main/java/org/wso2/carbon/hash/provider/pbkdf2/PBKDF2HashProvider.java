@@ -47,6 +47,7 @@ public class PBKDF2HashProvider implements HashProvider {
     private String pseudoRandomFunction;
     private int dkLength;
     private int iterationCount;
+    private SecretKeyFactory skf;
 
     @Override
     public void init() {
@@ -92,6 +93,17 @@ public class PBKDF2HashProvider implements HashProvider {
         }
         if (pseudoRandomFunctionObject != null) {
             pseudoRandomFunction = (String) pseudoRandomFunctionObject;
+            try {
+                skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
+            } catch (NoSuchAlgorithmException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug(pseudoRandomFunction + " " +
+                            ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
+                }
+                throw new HashProviderServerException(pseudoRandomFunction + " " +
+                        ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
+                        Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX + ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode());
+            }
         }
     }
 
@@ -100,7 +112,7 @@ public class PBKDF2HashProvider implements HashProvider {
 
         validateEmptyValue(plainText);
         validateEmptySalt(salt);
-        return calculateHash(plainText, salt, pseudoRandomFunction, iterationCount, dkLength);
+        return generateHash(plainText, salt, iterationCount, dkLength);
     }
 
     @Override
@@ -120,32 +132,21 @@ public class PBKDF2HashProvider implements HashProvider {
     }
 
     /**
-     * Calculate hash value according to the given parameters.
+     * Generate hash value according to the given parameters.
      *
      * @param plainText            The plain text value to be hashed.
      * @param salt                 The salt.
-     * @param pseudoRandomFunction PRF function which needs to be used for PBKDF2 hashing.
      * @param iterationCount       Number of iterations to be used by the PRF.
      * @param dkLength             The output length of the hash function.
      * @return The resulting hash value of the value.
-     * @throws HashProviderException If an error occurred while calculating the hash.
+     * @throws HashProviderException If an error occurred while generating the hash.
      */
-    private byte[] calculateHash(char[] plainText, String salt,
-                                 String pseudoRandomFunction, int iterationCount, int dkLength)
+    private byte[] generateHash(char[] plainText, String salt, int iterationCount, int dkLength)
             throws HashProviderException {
 
         try {
             PBEKeySpec spec = new PBEKeySpec(plainText, base64ToByteArray(salt), iterationCount, dkLength);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
             return skf.generateSecret(spec).getEncoded();
-        } catch (NoSuchAlgorithmException e) {
-            if (log.isDebugEnabled()) {
-                log.debug(pseudoRandomFunction + " " +
-                        ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
-            }
-            throw new HashProviderServerException(pseudoRandomFunction + " " +
-                    ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
-                    Constants.PBKDF2_HASH_PROVIDER_ERROR_PREFIX + ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getCode());
         } catch (InvalidKeySpecException e) {
             if (log.isDebugEnabled()) {
                 log.debug(ErrorMessage.ERROR_CODE_INVALID_KEY_SPEC.getDescription(), e);
