@@ -28,6 +28,7 @@ import org.wso2.carbon.user.core.exceptions.HashProviderException;
 import org.wso2.carbon.user.core.exceptions.HashProviderServerException;
 import org.wso2.carbon.user.core.hash.HashProvider;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -229,7 +230,7 @@ public class PBKDF2HashProvider implements HashProvider {
      */
     private byte[] base64ToByteArray(String salt) {
 
-        byte[] name = Base64.getEncoder().encode(salt.getBytes());
-        return (Base64.getDecoder().decode(new String(name).getBytes(StandardCharsets.UTF_8)));
+        byte[] name = Base64.getEncoder().encode(salt.getBytes(StandardCharsets.UTF_8));
+        return (Base64.getDecoder().decode(name));
     }
 }
