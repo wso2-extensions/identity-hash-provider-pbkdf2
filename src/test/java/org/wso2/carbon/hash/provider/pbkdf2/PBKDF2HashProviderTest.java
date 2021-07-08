@@ -161,8 +161,8 @@ public class PBKDF2HashProviderTest {
                                                String pseudoRandomFunction, String errorCodeExpected)
             throws HashProviderException {
 
-        initializeHashProvider(iterationCount, dkLength, pseudoRandomFunction);
         try {
+            initializeHashProvider(iterationCount, dkLength, pseudoRandomFunction);
             pbkdf2HashProvider.calculateHash(plainText, salt);
         } catch (HashProviderClientException e) {
             Assert.assertEquals(e.getErrorCode().substring(4), errorCodeExpected);
