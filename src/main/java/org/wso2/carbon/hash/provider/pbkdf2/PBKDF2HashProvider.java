@@ -56,6 +56,12 @@ public class PBKDF2HashProvider implements HashProvider {
         pseudoRandomFunction = Constants.DEFAULT_PBKDF2_PRF;
         dkLength = Constants.DEFAULT_DERIVED_KEY_LENGTH;
         iterationCount = Constants.DEFAULT_ITERATION_COUNT;
+        try {
+            skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
+        } catch (NoSuchAlgorithmException e) {
+            log.error(String.format(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), pseudoRandomFunction),
+                    e);
+        }
     }
 
     @Override
@@ -98,8 +104,8 @@ public class PBKDF2HashProvider implements HashProvider {
                 skf = SecretKeyFactory.getInstance(pseudoRandomFunction);
             } catch (NoSuchAlgorithmException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug(pseudoRandomFunction + " " +
-                            ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(), e);
+                    log.debug(String.format(ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
+                            pseudoRandomFunction), e);
                 }
                 throw new HashProviderServerException(pseudoRandomFunction + " " +
                         ErrorMessage.ERROR_CODE_NO_SUCH_ALGORITHM.getDescription(),
