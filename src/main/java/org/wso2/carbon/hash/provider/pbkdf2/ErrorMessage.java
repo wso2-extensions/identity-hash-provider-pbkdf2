@@ -31,8 +31,8 @@ public enum ErrorMessage {
             "Derived key length should be a positive integer"),
 
     // Server Errors.
-    ERROR_CODE_NO_SUCH_ALGORITHM("65001", "Not supported pseudo random function",
-            "PRF was not supported by Secret Key Factory"),
+    ERROR_CODE_NO_SUCH_ALGORITHM("65001", "Unsupported pseudo random function.",
+            "PRF: %s was not supported by Secret Key Factory."),
     ERROR_CODE_INVALID_KEY_SPEC("65002", "Secret key cannot be generated.",
             "Secret key cannot be generated from SecretKeyFactory"),
     ERROR_CODE_EMPTY_SALT_VALUE("65003", "Invalid salt value", "Salt value cannot be blank");
