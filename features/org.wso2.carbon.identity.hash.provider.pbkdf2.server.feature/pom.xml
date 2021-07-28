@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wso2.carbon.identity.hash.provider.pbkdf2</groupId>
         <artifactId>identity-hash-provider-pbkdf2</artifactId>
-        <version>0.1.2-SNAPSHOT</version>
+        <version>0.1.2</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
