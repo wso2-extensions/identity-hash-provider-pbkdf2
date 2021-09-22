@@ -20,7 +20,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion><build><plugins><plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><configuration><source>8</source><target>8</target></configuration></plugin></plugins></build>
 
     <parent>
         <groupId>org.wso2.carbon.identity.hash.provider.pbkdf2</groupId>
@@ -29,8 +28,11 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
+    <modelVersion>4.0.0</modelVersion>
     <artifactId>pbkdf2-hash-generator</artifactId>
     <version>0.1.3-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <description>Client for generate PBKDF2 Hash and the Salt Value for a given plain text password</description>
 
     <dependencies>
         <dependency>
@@ -38,5 +40,38 @@
             <artifactId>org.wso2.carbon.identity.hash.provider.pbkdf2</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven.dependency.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>dependency/</classpathPrefix>
+                            <mainClass>org.wso2.carbon.identity.utility.hash.generator.pbkdf2.PBKDF2HashGenerator</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     
 </project>

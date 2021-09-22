@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package hash.generator.pbkdf2;
+package org.wso2.carbon.identity.utility.hash.generator.pbkdf2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
