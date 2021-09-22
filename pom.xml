@@ -43,6 +43,7 @@
     <modules>
         <module>components/org.wso2.carbon.identity.hash.provider.pbkdf2</module>
         <module>features/org.wso2.carbon.identity.hash.provider.pbkdf2.server.feature</module>
+        <module>utility/pbkdf2-hash-generator</module>
     </modules>
 
     <dependencyManagement>
