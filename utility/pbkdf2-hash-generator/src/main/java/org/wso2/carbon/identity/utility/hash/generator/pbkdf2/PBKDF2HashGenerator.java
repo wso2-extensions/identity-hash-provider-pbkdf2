@@ -41,7 +41,7 @@ public class PBKDF2HashGenerator {
     public static void main(String[] args) {
 
         log.info("---Started the Hash generation Script---");
-        pbkdf2HashProvider = getHashProvider();
+        initHashProvider();
         getPasswordFromScanner();
         log.info("---Hash generation Task Completed---");
     }
@@ -76,15 +76,12 @@ public class PBKDF2HashGenerator {
     }
 
     /**
-     * This private method used to create a PBKDF2HashProvider instance.
-     *
-     * @return pbkdf2HashProvider which is used to generate hash values.
+     * This method used to initialize the PBKDF2HashProvider instance.
      */
-    private static PBKDF2HashProvider getHashProvider() {
+    private static void initHashProvider() {
 
-        PBKDF2HashProvider pbkdf2HashProvider = new PBKDF2HashProvider();
+        pbkdf2HashProvider = new PBKDF2HashProvider();
         pbkdf2HashProvider.init();
-        return pbkdf2HashProvider;
     }
 
     /**
