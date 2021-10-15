@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2021, WSO2 Inc. (http://www.wso2.com).
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -30,7 +30,7 @@ import java.util.Base64;
 import java.util.Scanner;
 
 /**
- * This class contains the Client for generate PBKDF2 Hash and the Salt Value for a given plain text password.
+ * This class contains the client for generate PBKDF2 hash and the salt value for a given plain text password.
  */
 public class PBKDF2HashGenerator {
 
@@ -47,7 +47,7 @@ public class PBKDF2HashGenerator {
     }
 
     /**
-     * Get Passwords as a user input from cmd line and print hashed password and salt value.
+     * Get passwords as a user input from command line and print hashed password and salt value.
      */
     private static void getPasswordFromScanner() {
 
@@ -56,10 +56,15 @@ public class PBKDF2HashGenerator {
         while (true) {
 
             log.info("Enter Password:");
-            //reads password.
+            // Reads password from scanner.
             String originalPassword = scanner.nextLine();
-
-            String generatedSalt = generateSaltValue();
+            String generatedSalt;
+            try {
+                generatedSalt = generateSaltValue();
+            } catch (NoSuchAlgorithmException e) {
+                log.error(e);
+                break;
+            }
             byte[] generatedSecuredPasswordHash;
             try {
                 generatedSecuredPasswordHash = calculateHash(originalPassword.toCharArray(), generatedSalt);
@@ -76,7 +81,7 @@ public class PBKDF2HashGenerator {
     }
 
     /**
-     * This method used to initialize the PBKDF2HashProvider instance.
+     * This method used to initialize the PBKDF2 hash provider instance.
      */
     private static void initHashProvider() {
 
@@ -97,21 +102,18 @@ public class PBKDF2HashGenerator {
     }
 
     /**
-     * This private method returns a saltValue using SecureRandom.
+     * This private method returns a salt value using SecureRandom.
      *
-     * @return saltValue.
+     * @return Salt value.
+     * @throws NoSuchAlgorithmException If no provider supports SecureRandom implementation for the specified algorithm.
      */
-    private static String generateSaltValue() throws RuntimeException {
+    private static String generateSaltValue() throws NoSuchAlgorithmException {
 
-        try {
-            SecureRandom secureRandom = SecureRandom.getInstance(SHA_1_PRNG);
-            byte[] bytes = new byte[16];
-            //secureRandom is automatically seeded by calling nextBytes
-            secureRandom.nextBytes(bytes);
-            return bytesToBase64(bytes);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA1PRNG algorithm could not be found.");
-        }
+        SecureRandom secureRandom = SecureRandom.getInstance(SHA_1_PRNG);
+        byte[] bytes = new byte[16];
+        // Secure random is automatically seeded by calling next bytes.
+        secureRandom.nextBytes(bytes);
+        return bytesToBase64(bytes);
     }
 
     /**
