@@ -40,13 +40,16 @@ public class PBKDF2HashServiceComponent {
 
     @Activate
     protected void activate(ComponentContext ctxt) {
-
-        HashProviderFactory hashProviderFactory = new PBKDF2HashProviderFactory();
-        ctxt.getBundleContext().registerService(HashProviderFactory.class.getName(),
-                hashProviderFactory, null);
+        try {
+            HashProviderFactory hashProviderFactory = new PBKDF2HashProviderFactory();
+            ctxt.getBundleContext().registerService(HashProviderFactory.class.getName(),
+                    hashProviderFactory, null);
                 
-        if (log.isDebugEnabled()) {
-            log.debug("PBKDF2 bundle activated successfully.");
+            if (log.isDebugEnabled()) {
+                log.debug("PBKDF2 bundle activated successfully.");
+            }
+        } catch (Throwable e) {
+            log.error("Failed to activate PBKDF bundle", e);
         }
     }
 
