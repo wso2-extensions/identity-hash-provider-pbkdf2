@@ -44,7 +44,10 @@ public class PBKDF2HashServiceComponent {
         HashProviderFactory hashProviderFactory = new PBKDF2HashProviderFactory();
         ctxt.getBundleContext().registerService(HashProviderFactory.class.getName(),
                 hashProviderFactory, null);
-        log.info("PBKDF2 bundle activated successfully.");
+                
+        if (log.isDebugEnabled()) {
+            log.debug("PBKDF2 bundle activated successfully.");
+        }
     }
 
     @Deactivate
